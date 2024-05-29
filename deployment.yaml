@@ -396,13 +396,12 @@ resources:
           sudo apt install python3.8-venv
           sudo python3 -m venv venv
           source venv/bin/activate
-          sudo pip3 install -r requirements.txt
           sudo git pull
           cd solicitudes1
+          sudo pip3 install -r requirements.txt
           sudo python3 manage.py makemigrations
           sudo python3 manage.py migrate
           sudo python3 manage.py migrate --run-syncdb
-          sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
 
 # # 2.2.3. cbs-documentos-1
 - type: compute.v1.instance
@@ -520,14 +519,12 @@ resources:
           sudo apt install python3.8-venv
           sudo python3 -m venv venv
           source venv/bin/activate
-          sudo pip3 install -r requirements.txt
           sudo git pull
           cd solicitudes2
+          sudo pip3 install -r requirements.txt
           sudo python3 manage.py makemigrations
           sudo python3 manage.py migrate
           sudo python3 manage.py migrate --run-syncdb
-          sudo su
-          sudo python3 manage.py cqrs_consume -w 2
 
 # 2.3.3. cbs-documentos-2
 - type: compute.v1.instance
