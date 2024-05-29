@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div style="display: flex; align-items: center; justify-content: center; flex-direction: column;" class="login-box auth0-box before">
+    
+    <h1>Retomar Proceso</h1>
+    <h3>Por favor ingrese su cédula para verificar su identidad</h3>
+    <h5>{{info}}</h5>
+    <form action="{% url 'verificacionesOTP' %}" method="post">
+        {% csrf_token %}
+        <label for="cedula">Cédula:</label>
+        <input type="text" id="cedula" name="cedula">
+        <input type="submit" value="Enviar">
+    </form>
+</div>
+
+{% endblock %}

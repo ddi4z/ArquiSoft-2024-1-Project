@@ -1,0 +1,601 @@
+# ***************** Universidad de los Andes ***********************
+# ****** Departamento de Ingeniería de Sistemas y Computación ******
+# ********** Arquitectura y diseño de Software - ISIS2503 **********
+#
+# Infraestructura para proyecto Solicitud de TDC
+# Elementos a desplegar:
+# 1. Firewalls:
+#    1.1. cbs-services-apps
+#    1.2. cbs-services-apps-web
+#    1.3. cbs-circuit-breaker
+#    1.4. cbs-circuit-breaker-admin
+#    1.5. cbs-clientes-db
+#    1.6. cbs-solicitudes-db
+#    1.7. cbs-message-rabbit
+#    1.8. cbs-dashboard-rabbit
+# 2. Instancias MVs:
+# 2.1. Kong y DBs
+#    2.1.1. cbs-kong-instance (Kong instalado y ejecutando) / us-central1-a
+#    2.1.2. cbs-db-clientes-instance (MongoDB instalado y configurado) / us-central1-a
+#    2.1.3. cbs-db-solicitudes-1-instance (postgreSQL instalado y configurado para CQRS) / us-central1-b
+#    2.1.4. cbs-db-solicitudes-2-instance (postgreSQL instalado y configurado para CQRS) / us-central1-b
+#    2.1.5. cbs-db-documentos-instance (postgreSQL instalado y configurado) / us-central1-c
+# 2.2. VMs con app
+#    2.2.1. cbs-clientes-1 (App instalada y ejecutando) / us-central1-a
+#    2.2.2. cbs-solicitudes-1 (App instalada y ejecutando) / us-central1-b
+#    2.2.3. cbs-documentos-1 (App instalada y ejecutando) / us-central1-c
+# 2.3. VMs replicadas con app
+#    2.3.1. cbs-clientes-2 (App instalada y ejecutando) / southamerica-east1-a
+#    2.3.2. cbs-solicitudes-2 (App instalada y ejecutando) / southamerica-east1-b
+#    2.3.3. cbs-documentos-2 (App instalada y ejecutando) / southamerica-east1-c
+# 2.4. Brókers de mensajería
+#    2.4.1. cbs-rabbit-instance (RabbitMQ instalado y ejecutando) / southamerica-east1-b
+
+# NOTA 1: us-central1 tiene IPs de la forma 10.128.0.X
+# NOTA 2: southamerica-east1 tiene IPs de la forma 10.158.0.X
+
+resources:
+# 1. Firewalls:
+# 1.1. cbs-services-apps
+- name: cbs-services-apps
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceTags: 
+    - cbs-circuit-breaker
+    targetTags:
+    - cbs-services-firewall
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 8080
+
+# 1.2. cbs-services-apps-web
+- name: cbs-services-apps-web
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceRanges: 
+    - 0.0.0.0/0
+    targetTags:
+    - cbs-services-firewall
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 8080
+
+# 1.3. cbs-circuit-breaker
+- name: cbs-circuit-breaker
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceRanges: 
+    - 0.0.0.0/0
+    targetTags:
+    - cbs-circuit-breaker
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 8000
+
+# 1.4. cbs-circuit-breaker-admin
+- name: cbs-circuit-breaker-admin
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceRanges: 
+    - 0.0.0.0/0
+    targetTags:
+    - cbs-circuit-breaker
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 8001
+
+# 1.5. cbs-clientes-db
+- name: cbs-clientes-db
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceTags: 
+    - cbs-services-firewall
+    targetTags:
+    - cbs-clientes-db
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 27017
+
+# 1.6. cbs-solicitudes-db
+- name: cbs-solicitudes-db
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceTags: 
+    - cbs-services-firewall
+    targetTags:
+    - cbs-solicitudes-db
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 5432
+
+# 1.7. cbs-message-rabbit
+- name: cbs-message-rabbit
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceTags:
+    - cbs-services-firewall
+    targetTags:
+    - cbs-rabbit-instance
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 5672
+
+# 1.8. cbs-dashboard-rabbit
+- name: cbs-dashboard-rabbit
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceRanges: 
+    - 0.0.0.0/0
+    targetTags:
+    - cbs-rabbit-instance
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 15672
+
+# 2. Instancias MVs:
+# 2.1. Kong y DB
+# 2.1.1. cbs-kong-instance
+- type: compute.v1.instance
+  name: cbs-kong-instance
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-101-17162-463-8
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+      networkIP: 10.128.0.10
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - cbs-circuit-breaker
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo git clone https://github.com/ddi4z/bancalpes.git
+          cd Proyecto_Uno
+          sudo git pull
+          docker network create kong-net
+          docker run -d --name kong --network=kong-net --restart=always \
+          -v "$(pwd):/kong/declarative/" -e "KONG_DATABASE=off" \
+          -e "KONG_DECLARATIVE_CONFIG=/kong/declarative/kong.yaml" \
+          -p 8000:8000 kong/kong-gateway
+
+# # 2.1.2. cbs-db-clientes-instance
+# - type: compute.v1.instance
+#   name: cbs-db-clientes-instance
+#   properties:
+#     zone: us-central1-a
+#     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-a/machineTypes/e2-micro
+#     disks:
+#     - deviceName: boot
+#       type: PERSISTENT
+#       boot: true
+#       autoDelete: true
+#       initializeParams:
+#         sourceImage: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-101-17162-386-64
+#     networkInterfaces:
+#     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+#       networkIP: 10.128.0.11
+#       accessConfigs:
+#       - name: External NAT
+#         type: ONE_TO_ONE_NAT
+#     tags:
+#       items: 
+#       - cbs-clientes-db
+#     metadata:
+#       items:
+#       - key: startup-script
+#         value: |
+#           #!/bin/bash
+#           docker run -e MONGO_INITDB_ROOT_USERNAME=solicitud_tdc_user -e MONGO_INITDB_ROOT_PASSWORD=solicitud_tdc -p 27017:27017 -d mongo
+#           docker ps -a
+
+# # 2.1.3. cbs-db-solicitudes-1-instance
+# - type: compute.v1.instance
+#   name: cbs-db-solicitudes-1-instance
+#   properties:
+#     zone: us-central1-b
+#     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-b/machineTypes/e2-micro
+#     disks:
+#     - deviceName: boot
+#       type: PERSISTENT
+#       boot: true
+#       autoDelete: true
+#       initializeParams:
+#         sourceImage: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-101-17162-463-8
+#     networkInterfaces:
+#     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+#       networkIP: 10.128.0.12
+#       accessConfigs:
+#       - name: External NAT
+#         type: ONE_TO_ONE_NAT
+#     tags:
+#       items: 
+#       - cbs-solicitudes-db
+#     metadata:
+#       items:
+#       - key: startup-script
+#         value: |
+#           #!/bin/bash
+#           docker run --restart=always -d -e POSTGRES_USER=solicitud_tdc_user -e POSTGRES_DB=solicitud_tdc_db -e POSTGRES_PASSWORD=solicitud_tdc -p 5432:5432 --name solicitud_tdc_db postgres
+
+# # 2.1.4. cbs-db-solicitudes-2-instance
+# - type: compute.v1.instance
+#   name: cbs-db-solicitudes-2-instance
+#   properties:
+#     zone: us-central1-b
+#     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-b/machineTypes/e2-micro
+#     disks:
+#     - deviceName: boot
+#       type: PERSISTENT
+#       boot: true
+#       autoDelete: true
+#       initializeParams:
+#         sourceImage: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-101-17162-463-8
+#     networkInterfaces:
+#     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+#       networkIP: 10.128.0.13
+#       accessConfigs:
+#       - name: External NAT
+#         type: ONE_TO_ONE_NAT
+#     tags:
+#       items: 
+#       - cbs-solicitudes-db
+#     metadata:
+#       items:
+#       - key: startup-script
+#         value: |
+#           #!/bin/bash
+#           docker run --restart=always -d -e POSTGRES_USER=solicitud_tdc_user -e POSTGRES_DB=solicitud_tdc_db -e POSTGRES_PASSWORD=solicitud_tdc -p 5432:5432 --name solicitud_tdc_db postgres
+
+# # # 2.1.5. cbs-db-documentos-instance
+# - type: compute.v1.instance
+#   name: cbs-db-documentos-instance
+#   properties:
+#     zone: us-central1-c
+#     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-c/machineTypes/e2-micro
+#     disks:
+#     - deviceName: boot
+#       type: PERSISTENT
+#       boot: true
+#       autoDelete: true
+#       initializeParams:
+#         sourceImage: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-101-17162-463-8
+#     networkInterfaces:
+#     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+#       networkIP: 10.128.0.14
+#       accessConfigs:
+#       - name: External NAT
+#         type: ONE_TO_ONE_NAT
+#     tags:
+#       items: 
+#       - cbs-solicitudes-db
+#     metadata:
+#       items:
+#       - key: startup-script
+#         value: |
+#           #!/bin/bash
+#           docker run --restart=always -d -e POSTGRES_USER=solicitud_tdc_user -e POSTGRES_DB=solicitud_tdc_db -e POSTGRES_PASSWORD=solicitud_tdc -p 5432:5432 --name solicitud_tdc_db postgres
+
+# # 2.2. VMs con app
+# # 2.2.1. cbs-clientes-1
+# - type: compute.v1.instance
+#   name: cbs-clientes-1
+#   properties:
+#     zone: us-central1-a
+#     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-a/machineTypes/e2-micro
+#     disks:
+#     - deviceName: boot
+#       type: PERSISTENT
+#       boot: true
+#       autoDelete: true
+#       initializeParams:
+#         sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240426
+#     networkInterfaces:
+#     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+#       networkIP: 10.128.0.15
+#       accessConfigs:
+#       - name: External NAT
+#         type: ONE_TO_ONE_NAT
+#     tags:
+#       items: 
+#       - cbs-services-firewall
+#     metadata:
+#       items:
+#       - key: startup-script
+#         value: |
+#           #!/bin/bash
+#           sudo apt-get update
+#           sudo apt install python3-pip -y
+#           sudo git clone https://github.com/ddi4z/bancalpes.git
+#           cd Proyecto_Uno
+#           sudo apt install python3.8-venv
+#           sudo python3 -m venv venv
+#           source venv/bin/activate
+#           sudo pip3 install -r requirements.txt
+#           sudo git pull
+#           cd clientes
+#           sudo python3 manage.py makemigrations
+#           sudo python3 manage.py migrate
+#           sudo python3 manage.py migrate --run-syncdb
+#           sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
+
+# 2.2.2. cbs-solicitudes-1
+- type: compute.v1.instance
+  name: cbs-solicitudes-1
+  properties:
+    zone: us-central1-b
+    machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-b/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240426
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+      networkIP: 10.128.0.16
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - cbs-services-firewall
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo apt install python3-pip -y
+          sudo git clone https://github.com/ddi4z/bancalpes.git
+          cd Proyecto_Uno
+          sudo apt install python3.8-venv
+          sudo python3 -m venv venv
+          source venv/bin/activate
+          sudo pip3 install -r requirements.txt
+          sudo git pull
+          cd solicitudes1
+          sudo python3 manage.py makemigrations
+          sudo python3 manage.py migrate
+          sudo python3 manage.py migrate --run-syncdb
+          sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
+
+# # # 2.2.3. cbs-documentos-1
+# - type: compute.v1.instance
+#   name: cbs-documentos-1
+#   properties:
+#     zone: us-central1-c
+#     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-c/machineTypes/e2-micro
+#     disks:
+#     - deviceName: boot
+#       type: PERSISTENT
+#       boot: true
+#       autoDelete: true
+#       initializeParams:
+#         sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240426
+#     networkInterfaces:
+#     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+#       networkIP: 10.128.0.17
+#       accessConfigs:
+#       - name: External NAT
+#         type: ONE_TO_ONE_NAT
+#     tags:
+#       items: 
+#       - cbs-services-firewall
+#     metadata:
+#       items:
+#       - key: startup-script
+#         value: |
+#           #!/bin/bash
+#           sudo apt-get update
+#           sudo apt install python3-pip -y
+#           sudo git clone https://github.com/ddi4z/bancalpes.git
+#           cd Proyecto_Uno
+#           sudo apt install python3.8-venv
+#           sudo python3 -m venv venv
+#           source venv/bin/activate
+#           sudo pip3 install -r requirements.txt
+#           sudo git pull
+#           cd documentos
+#           sudo python3 documentos.py
+
+# # 2.3. VMs replicadas con app
+# # 2.3.1. cbs-clientes-2
+# - type: compute.v1.instance
+#   name: cbs-clientes-2
+#   properties:
+#     zone: southamerica-east1-a
+#     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/southamerica-east1-a/machineTypes/e2-micro
+#     disks:
+#     - deviceName: boot
+#       type: PERSISTENT
+#       boot: true
+#       autoDelete: true
+#       initializeParams:
+#         sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240426
+#     networkInterfaces:
+#     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+#       networkIP: 10.158.0.18
+#       accessConfigs:
+#       - name: External NAT
+#         type: ONE_TO_ONE_NAT
+#     tags:
+#       items: 
+#       - cbs-services-firewall
+#     metadata:
+#       items:
+#       - key: startup-script
+#         value: |
+#           #!/bin/bash
+#           sudo apt-get update
+#           sudo apt install python3-pip -y
+#           sudo git clone https://github.com/ddi4z/bancalpes.git
+#           cd Proyecto_Uno
+#           sudo apt install python3.8-venv
+#           sudo python3 -m venv venv
+#           source venv/bin/activate
+#           sudo pip3 install -r requirements.txt
+#           sudo git pull
+#           cd clientes
+#           sudo python3 manage.py makemigrations
+#           sudo python3 manage.py migrate
+#           sudo python3 manage.py migrate --run-syncdb
+#           sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
+
+# 2.3.2. cbs-solicitudes-2
+- type: compute.v1.instance
+  name: cbs-solicitudes-2
+  properties:
+    zone: southamerica-east1-b
+    machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/southamerica-east1-b/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240426
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+      networkIP: 10.158.0.19
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - cbs-services-firewall
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo apt install python3-pip -y
+          sudo git clone https://github.com/ddi4z/bancalpes.git
+          cd Proyecto_Uno
+          sudo apt install python3.8-venv
+          sudo python3 -m venv venv
+          source venv/bin/activate
+          sudo pip3 install -r requirements.txt
+          sudo git pull
+          cd solicitudes2
+          sudo python3 manage.py makemigrations
+          sudo python3 manage.py migrate
+          sudo python3 manage.py migrate --run-syncdb
+          sudo su
+          sudo python3 manage.py cqrs_consume -w 2
+
+# # 2.3.3. cbs-documentos-2
+# - type: compute.v1.instance
+#   name: cbs-documentos-2
+#   properties:
+#     zone: southamerica-east1-c
+#     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/southamerica-east1-c/machineTypes/e2-micro
+#     disks:
+#     - deviceName: boot
+#       type: PERSISTENT
+#       boot: true
+#       autoDelete: true
+#       initializeParams:
+#         sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240426
+#     networkInterfaces:
+#     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+#       networkIP: 10.158.0.20
+#       accessConfigs:
+#       - name: External NAT
+#         type: ONE_TO_ONE_NAT
+#     tags:
+#       items: 
+#       - cbs-services-firewall
+#     metadata:
+#       items:
+#       - key: startup-script
+#         value: |
+#           #!/bin/bash
+#           sudo apt-get update
+#           sudo apt install python3-pip -y
+#           sudo git clone https://github.com/ddi4z/bancalpes.git
+#           cd Proyecto_Uno
+#           sudo apt install python3.8-venv
+#           sudo python3 -m venv venv
+#           source venv/bin/activate
+#           sudo pip3 install -r requirements.txt
+#           sudo git pull
+#           cd documentos
+#           sudo python3 documentos.py
+
+# 2.4. Brókers de mensajería
+# 2.4.1. cbs-rabbit-instance
+- type: compute.v1.instance
+  name: cbs-rabbit-instance
+  properties:
+    zone: southamerica-east1-b
+    machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/southamerica-east1-b/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-101-17162-463-8
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+      networkIP: 10.158.0.21
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - cbs-rabbit-instance
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          docker run -d --hostname solicitud_tdc_app --name solicitud_tdc_app -e RABBITMQ_DEFAULT_USER=solicitud_tdc_app -e RABBITMQ_DEFAULT_PASS=solicitud_tdc -p 5672:5672 rabbitmq:3
+          docker ps -a
+          

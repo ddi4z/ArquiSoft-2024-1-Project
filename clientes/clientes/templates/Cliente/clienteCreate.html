@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+<form method="POST" id="cliente-form">
+    {% csrf_token %}
+    <br>
+    <input type="hidden" name="hmac" id="hmac">
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success waves-effect waves-light">Continue</button>
+<!--     <button type="button" class="btn btn-primary waves-effect waves-light" onClick=" window.location.href='/clientes' ">Back -->
+    </button>
+</form>
+<!-- Incluye CryptoJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
+<!-- Incluye JSEncrypt -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.0.0/jsencrypt.min.js"></script>
+
+<script>
+    document.getElementById('cliente-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(document.getElementById('cliente-form'));
+        var data = {};
+        formData.forEach((value, key) => {
+            if (key !== 'csrfmiddlewaretoken' && key !== 'hmac' && key !== 'encrypted_data') {
+                if (!isNaN(value) && key !== 'celular' && key !== 'cedula') {
+                    data[key] = Number(value);
+                } else {
+                    data[key] = value;
+                }
+            }
+        });
+
+        const message = JSON.stringify(data).replace(/:/g, ': ').replace(/,/g, ', ');
+        const secretKey = 'django-insecure-%hli0)=#odc5pd_xqtyaktwh#y_&(7o$566y&b=a&vkr=oz19p';
+        const hmac = CryptoJS.HmacSHA256(message, secretKey).toString(CryptoJS.enc.Hex);
+
+        // Cifrar el mensaje con RSA usando JSEncrypt
+        var encrypt = new JSEncrypt();
+        encrypt.setPublicKey("-----BEGIN PUBLIC KEY-----\n" +
+            "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDlOJu6TyygqxfWT7eLtGDwajtN\n" +
+            "FOb9I5XRb6khyfD1Yt3YiCgQWMNW649887VGJiGr/L5i2osbl8C9+WJTeucF+S76\n" +
+            "xFxdU6jE0NQ+Z+zEdhUTooNRaY5nZiu5PgDB0ED/ZKBUSLKL7eibMxZtMlUDHjm4\n" +
+            "gwQco1KRMDSmXSMkDwIDAQAB\n" +
+            "-----END PUBLIC KEY-----");
+
+        let attributes = ['cedula', 'celular', 'direccion'];
+        for (let i = 0; i < attributes.length; i++) {
+            let attribute = attributes[i];
+            let input = document.querySelector('input[name=' + attribute + ']');
+            let encrypted = encrypt.encrypt(input.value);
+            if (encrypted) {
+                input.value = encrypted;
+            } else {
+                console.error('Encryption failed for', attribute);
+            }
+        }
+
+        document.querySelector('#hmac').value = hmac;
+        event.target.submit();
+    });
+</script>
+
+{% endblock %}

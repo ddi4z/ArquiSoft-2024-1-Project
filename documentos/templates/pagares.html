@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="content">
+    <div class="">
+        <div class="page-header-title">
+            <h4 class="page-title">Ultimos 10 pagares</h4>
+            <!---
+            <div style="text-align:right;">
+                <button type="button" class="btn btn-success waves-effect waves-light"
+                        onClick=" window.location.href='/measurementcreate' " style="text-align:center;">+
+                </button>
+            </div>
+            --->
+        </div>
+    </div>
+
+    <br>
+
+    <div class="page-content-wrapper">
+        <div class="container">
+            <!-- Content page -->
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr style="color:#0E2EB0">
+                            <th font color="red">Id</th>
+                            <th>Ruta</th>
+                            <th>Fecha expedición</th>
+                            <th>Id firma</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for pagare in pagare_list %}
+                        <tr>
+                            <td>{{ pagare.id }}</td>
+                            <td>{{ pagare.ruta }}</td>
+                            <td>{{ pagare.fecha_expedicion }}</td>
+                            <td>{{ pagare.firma.id }}</td>
+                        </tr>
+                        {% endfor %}
+
+                        </tbody>
+                    </table>
+
+                    <div style="text-align:center;">
+                        <button type="button" class="btn btn-success waves-effect waves-light"
+                        onClick=" window.location.href='/pagareCreate' ">
+                            Continue
+                        </button>
+                        <button type="button" class="btn btn-primary waves-effect waves-light"
+                                onClick=" window.location.href='/' ">
+                            Back
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

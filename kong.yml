@@ -1,0 +1,140 @@
+_format_version: "2.1"
+
+services:
+  - name: clientes_service
+    host: clientes_upstream
+    protocol: http
+    routes:
+      - name: home
+        paths:
+          - /home
+          - /home/terminosCondiciones
+        strip_path: false
+      - name: clientes
+        paths:
+          - /clientes
+          - /clienteCreate
+          - /clienteExists
+          - /solicitudPorCedula
+          - /clienteCedulaDecrypted
+          - /correoPorCedula
+          - /informacionesEconomicas
+          - /informacionEconomicaCreate
+          - /verificacionesOTP
+          - /validarOTP
+        strip_path: false
+
+  - name: solicitudes_master_service
+    host: solicitudes_master_upstream
+    protocol: http
+    routes:
+      - name: master
+        paths:
+          - /solicitudes
+          - /solicitudCreate
+          - /nuevaSolicitud
+          - /getSolicitudById
+          - /addPagare
+          - /updateSolicitud
+          - /validacionLugar
+          - /activar
+          - /confirmar
+          - /oferta
+          - /tarjetasOfertadasCreate
+        strip_path: false
+
+  - name: solicitudes_replica_service
+    host: solicitudes_replica_upstream
+    protocol: http
+    routes:
+      - name: replica
+        paths:
+          - /solicitudes
+          - /getSolicitudById
+          - /validacionLugar
+          - /activar
+          - /confirmar
+          - /oferta
+        strip_path: false
+
+  - name: documentos_service
+    host: documentos_upstream
+    protocol: http
+    routes:
+      - name: documentos
+        paths:
+          - /firma
+          - /documentosValidados
+          - /carga
+          - /pagares
+          - /firmas
+        strip_path: false
+    
+upstreams:
+  - name: clientes_upstream
+    targets:
+      - target: 10.128.0.15:8080
+        weight: 100
+      - target: 10.158.0.18:8080
+        weight: 100
+    healthchecks:
+      threshold: 51
+      active:
+        http_path: /health/
+        timeout: 5
+        healthy:
+          successes: 2
+          interval: 5
+        unhealthy:
+          tcp_failures: 3
+          interval: 5
+
+  - name: solicitudes_master_upstream
+    targets:
+      - target: 10.128.0.16:8080
+        weight: 100
+    healthchecks:
+      threshold: 51
+      active:
+        http_path: /health/
+        timeout: 5
+        healthy:
+          successes: 2
+          interval: 5
+        unhealthy:
+          tcp_failures: 3
+          interval: 5
+
+  - name: solicitudes_replica_upstream
+    targets:
+      - target: 10.158.0.19:8080
+        weight: 100
+    healthchecks:
+      threshold: 51
+      active:
+        http_path: /health/
+        timeout: 5
+        healthy:
+          successes: 2
+          interval: 5
+        unhealthy:
+          tcp_failures: 3
+          interval: 5
+
+  - name: documentos_upstream
+    targets:
+      - target: 10.128.0.17:8080
+        weight: 100
+      - target: 10.158.0.20:8080
+        weight: 100
+    healthchecks:
+      threshold: 51
+      active:
+        http_path: /health/
+        timeout: 5
+        healthy:
+          successes: 2
+          interval: 5
+        unhealthy:
+          tcp_failures: 3
+          interval: 5

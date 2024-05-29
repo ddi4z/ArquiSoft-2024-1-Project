@@ -1,0 +1,16 @@
+Django
+psycopg2-binary
+pytz
+sqlparse
+twilio
+python-dateutil
+cryptography
+python-decouple
+pymongo==3.12.3
+djongo==1.3.6
+flask 
+sqlalchemy
+flask_sqlalchemy
+django-cqrs
+djangorestframework
+pycryptodomex

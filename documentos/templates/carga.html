@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Carga de documentos</h4>
+                </div>
+                <div class="card-body">
+                    <img src="/static/media/carga.png" class="img-fluid mb-3" alt="Carga de archivos">
+                    <h2 class="mb-3">Formulario de carga de archivos</h2>
+                    <form id="uploadForm" action="/carga/{{cedula}}" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+                        <input type="hidden" name="hmac" id="hmac">
+                        <div class="form-group">
+                            <label for="cedulaFrontal">Cédula Frontal</label>
+                            <input type="file" required name="cedulaFrontal" class="form-control-file">
+                        </div>
+                        <div class="form-group">
+                            <label for="cedulaPosterior">Cédula Posterior</label>
+                            <input type="file" required name="cedulaPosterior" class="form-control-file">
+                        </div>
+                        <div class="form-group">
+                            <label for="desprendiblePago1">Desprendible de Pago 1</label>
+                            <input type="file" required name="desprendiblePago1" class="form-control-file">
+                        </div>
+                        <div class="form-group">
+                            <label for="desprendiblePago2">Desprendible de Pago 2</label>
+                            <input type="file" required name="desprendiblePago2" class="form-control-file">
+                        </div>
+                        <button type="submit" class="btn btn-success">Enviar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
+<script>
+function validateForm() {
+    var files = document.getElementById('uploadForm').getElementsByTagName('input');
+    for (var i = 0; i < files.length; i++) {
+        if (files[i].type === 'file') {
+            var file = files[i].files[0];
+            if (file) {
+                var fileName = file.name;
+                var fileSize = file.size;
+                var fileType = file.type;
+                
+                if (fileType !== 'image/png') {
+                    alert('Por favor, seleccione solo archivos PNG.');
+                    return false;
+                }
+
+                if (fileSize > 10 * 1024 * 1024) { // 10MB in bytes
+                    alert('El tamaño del archivo debe ser menor a 10MB.');
+                    return false;
+                }
+            } else {
+                alert('Por favor, seleccione un archivo.');
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+document.getElementById('uploadForm').addEventListener('submit', function(event) {
+    const formData = new FormData(event.target);
+    var data = {};
+    for (var pair of formData.entries()) {
+        if (pair[0] !== 'csrfmiddlewaretoken' && pair[0] !== 'hmac') {
+            var fileName = pair[1].name;
+            var fileSize = pair[1].size;
+            data[pair[0]] = {
+                name: fileName,
+                size: fileSize
+        }
+        };
+    }
+
+
+    const message = JSON.stringify(data).replace(/:/g, ': ').replace(/,/g, ', ');
+    const secretKey = 'django-insecure-%hli0)=#odc5pd_xqtyaktwh#y_&(7o$566y&b=a&vkr=oz19p';
+    const hmac = CryptoJS.HmacSHA256(message, secretKey).toString(CryptoJS.enc.Hex);
+
+    // Enviar el formulario
+    document.querySelector('#hmac').value = hmac;
+    event.target.submit();
+});
+</script>
+
+{% endblock %}

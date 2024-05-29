@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center;" class="login-box auth0-box before">
+    <div class="page-header-title">
+        <h4 class="page-title">Firma del pagaré</h4>
+        <div>
+            <img style="width: 20%;" src="/static/media/firma.png" />
+        </div>
+        <script src="https://cdn.docuseal.co/js/form.js"></script>
+            <docuseal-form
+                id="docusealForm"
+                data-language="es"
+                data-send-copy-email=false
+                data-with-download-button=false
+                data-with-send-copy-button=false
+
+                data-logo="https://images.vexels.com/media/users/3/129286/isolated/preview/f71f09d3aa7db678ee884a2cdea1a435-simbolo-del-edificio-del-banco.png"
+                data-src="https://docuseal.co/d/jZrSRtUPDG591A"
+                data-email="{{correo}}">
+
+            </docuseal-form>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var firmaCompleta = "{{ firma|lower }}";
+                var botonContinue = document.getElementById("boton-continue");
+                if (firmaCompleta) {
+                    botonContinue.disabled = false;
+                } else {
+                    botonContinue.disabled = true;
+                }
+            });
+
+            window.docusealForm.addEventListener('completed', (e) => {
+                fetch('/firma/{{ cedula }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify(e.detail)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Evento completado enviado exitosamente.');
+                        document.getElementById("boton-continue").disabled = false;
+                    } else {
+                        console.error('Error al enviar el evento completado.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al enviar el evento completado:', error);
+                });
+            });
+
+        </script>
+    </div>
+    <button class="btn btn-primary waves-effect waves-light" onClick="window.location.href='/oferta/?cedula={{cedula}}'">Back</button>
+    <button id="boton-continue" class="btn btn-primary waves-effect waves-light" onClick="window.location.href='/carga/{{cedula}}'">Continue</button>
+</div>
+
+{% endblock %}
