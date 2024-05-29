@@ -5,13 +5,10 @@ services:
     host: clientes_upstream
     protocol: http
     routes:
-      - name: home
+      - name: clientes
         paths:
           - /home
           - /home/terminosCondiciones
-        strip_path: false
-      - name: clientes
-        paths:
           - /clientes
           - /clienteCreate
           - /clienteExists
@@ -30,14 +27,12 @@ services:
     routes:
       - name: master
         paths:
-          - /solicitudes
           - /solicitudCreate
           - /nuevaSolicitud
-          - /getSolicitudById
           - /addPagare
           - /updateSolicitud
-          - /validacionLugar
           - /activar
+          - /validacionLugar
           - /confirmar
           - /oferta
           - /tarjetasOfertadasCreate
@@ -51,10 +46,6 @@ services:
         paths:
           - /solicitudes
           - /getSolicitudById
-          - /validacionLugar
-          - /activar
-          - /confirmar
-          - /oferta
         strip_path: false
 
   - name: documentos_service
