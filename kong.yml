@@ -21,6 +21,16 @@ services:
           - /validarOTP
         strip_path: false
 
+  - name: solicitudes_replica_service
+    host: solicitudes_replica_upstream
+    protocol: http
+    routes:
+      - name: replica
+        paths:
+          - /solicitudes
+          - /getSolicitudById
+        strip_path: false
+
   - name: solicitudes_master_service
     host: solicitudes_master_upstream
     protocol: http
@@ -36,16 +46,6 @@ services:
           - /confirmar
           - /oferta
           - /tarjetasOfertadasCreate
-        strip_path: false
-
-  - name: solicitudes_replica_service
-    host: solicitudes_replica_upstream
-    protocol: http
-    routes:
-      - name: replica
-        paths:
-          - /solicitudes
-          - /getSolicitudById
         strip_path: false
 
   - name: documentos_service
@@ -80,37 +80,15 @@ upstreams:
           tcp_failures: 3
           interval: 5
 
-  - name: solicitudes_master_upstream
-    targets:
-      - target: 10.128.0.16:8080
-        weight: 100
-    healthchecks:
-      threshold: 51
-      active:
-        http_path: /health/
-        timeout: 5
-        healthy:
-          successes: 2
-          interval: 5
-        unhealthy:
-          tcp_failures: 3
-          interval: 5
-
   - name: solicitudes_replica_upstream
     targets:
       - target: 10.158.0.19:8080
         weight: 100
-    healthchecks:
-      threshold: 51
-      active:
-        http_path: /health/
-        timeout: 5
-        healthy:
-          successes: 2
-          interval: 5
-        unhealthy:
-          tcp_failures: 3
-          interval: 5
+
+  - name: solicitudes_master_upstream
+    targets:
+      - target: 10.128.0.16:8080
+        weight: 100
 
   - name: documentos_upstream
     targets:
