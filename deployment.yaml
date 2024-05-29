@@ -399,6 +399,7 @@ resources:
           sudo python3 manage.py makemigrations
           sudo python3 manage.py migrate
           sudo python3 manage.py migrate --run-syncdb
+          sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
 
 # # 2.2.3. cbs-documentos-1
 - type: compute.v1.instance
