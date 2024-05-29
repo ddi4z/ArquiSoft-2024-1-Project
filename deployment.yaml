@@ -203,34 +203,34 @@ resources:
           -p 8000:8000 kong/kong-gateway
 
 # 2.1.2. cbs-db-clientes-instance
-- type: compute.v1.instance
-  name: cbs-db-clientes-instance
-  properties:
-    zone: us-central1-a
-    machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-a/machineTypes/e2-micro
-    disks:
-    - deviceName: boot
-      type: PERSISTENT
-      boot: true
-      autoDelete: true
-      initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-101-17162-386-64
-    networkInterfaces:
-    - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
-      networkIP: 10.128.0.11
-      accessConfigs:
-      - name: External NAT
-        type: ONE_TO_ONE_NAT
-    tags:
-      items: 
-      - cbs-clientes-db
-    metadata:
-      items:
-      - key: startup-script
-        value: |
-          #!/bin/bash
-          docker run -e MONGO_INITDB_ROOT_USERNAME=solicitud_tdc_user -e MONGO_INITDB_ROOT_PASSWORD=solicitud_tdc -p 27017:27017 -d mongo
-          docker ps -a
+# - type: compute.v1.instance
+#   name: cbs-db-clientes-instance
+#   properties:
+#     zone: us-central1-a
+#     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-a/machineTypes/e2-micro
+#     disks:
+#     - deviceName: boot
+#       type: PERSISTENT
+#       boot: true
+#       autoDelete: true
+#       initializeParams:
+#         sourceImage: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-101-17162-386-64
+#     networkInterfaces:
+#     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+#       networkIP: 10.128.0.11
+#       accessConfigs:
+#       - name: External NAT
+#         type: ONE_TO_ONE_NAT
+#     tags:
+#       items: 
+#       - cbs-clientes-db
+#     metadata:
+#       items:
+#       - key: startup-script
+#         value: |
+#           #!/bin/bash
+#           docker run -e MONGO_INITDB_ROOT_USERNAME=solicitud_tdc_user -e MONGO_INITDB_ROOT_PASSWORD=solicitud_tdc -p 27017:27017 -d mongo
+#           docker ps -a
 
 # # 2.1.3. cbs-db-solicitudes-1-instance
 # - type: compute.v1.instance
@@ -291,33 +291,33 @@ resources:
 #           docker run --restart=always -d -e POSTGRES_USER=solicitud_tdc_user -e POSTGRES_DB=solicitud_tdc_db -e POSTGRES_PASSWORD=solicitud_tdc -p 5432:5432 --name solicitud_tdc_db postgres
 
 # # 2.1.5. cbs-db-documentos-instance
-- type: compute.v1.instance
-  name: cbs-db-documentos-instance
-  properties:
-    zone: us-central1-c
-    machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-c/machineTypes/e2-micro
-    disks:
-    - deviceName: boot
-      type: PERSISTENT
-      boot: true
-      autoDelete: true
-      initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-101-17162-463-8
-    networkInterfaces:
-    - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
-      networkIP: 10.128.0.14
-      accessConfigs:
-      - name: External NAT
-        type: ONE_TO_ONE_NAT
-    tags:
-      items: 
-      - cbs-solicitudes-db
-    metadata:
-      items:
-      - key: startup-script
-        value: |
-          #!/bin/bash
-          docker run --restart=always -d -e POSTGRES_USER=solicitud_tdc_user -e POSTGRES_DB=solicitud_tdc_db -e POSTGRES_PASSWORD=solicitud_tdc -p 5432:5432 --name solicitud_tdc_db postgres
+# - type: compute.v1.instance
+#   name: cbs-db-documentos-instance
+#   properties:
+#     zone: us-central1-c
+#     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-c/machineTypes/e2-micro
+#     disks:
+#     - deviceName: boot
+#       type: PERSISTENT
+#       boot: true
+#       autoDelete: true
+#       initializeParams:
+#         sourceImage: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-101-17162-463-8
+#     networkInterfaces:
+#     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+#       networkIP: 10.128.0.14
+#       accessConfigs:
+#       - name: External NAT
+#         type: ONE_TO_ONE_NAT
+#     tags:
+#       items: 
+#       - cbs-solicitudes-db
+#     metadata:
+#       items:
+#       - key: startup-script
+#         value: |
+#           #!/bin/bash
+#           docker run --restart=always -d -e POSTGRES_USER=solicitud_tdc_user -e POSTGRES_DB=solicitud_tdc_db -e POSTGRES_PASSWORD=solicitud_tdc -p 5432:5432 --name solicitud_tdc_db postgres
 
 # 2.2. VMs con app
 # 2.2.1. cbs-clientes-1
