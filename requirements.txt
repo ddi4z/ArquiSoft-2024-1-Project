@@ -14,4 +14,5 @@ django-cqrs
 djangorestframework
 pycryptodomex
 pymongo[srv]
+dnspython
 sqlparse==0.2.4
