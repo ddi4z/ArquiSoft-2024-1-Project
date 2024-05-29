@@ -193,8 +193,8 @@ resources:
       - key: startup-script
         value: |
           #!/bin/bash
-          sudo git clone https://github.com/ddi4z/Proyecto_Uno.git
-          cd Proyecto_Uno
+          sudo git clone https://github.com/ddi4z/Proyecto_uno.git
+          cd Proyecto_uno
           sudo git pull
           docker network create kong-net
           docker run -d --name kong --network=kong-net --restart=always \
@@ -349,8 +349,8 @@ resources:
 #           #!/bin/bash
 #           sudo apt-get update
 #           sudo apt install python3-pip -y
-#           sudo git clone https://github.com/ddi4z/Proyecto_Uno.git
-#           cd Proyecto_Uno
+#           sudo git clone https://github.com/ddi4z/Proyecto_uno.git
+#           cd Proyecto_uno
 #           sudo apt install python3.8-venv
 #           sudo python3 -m venv venv
 #           source venv/bin/activate
@@ -391,8 +391,8 @@ resources:
           #!/bin/bash
           sudo apt-get update
           sudo apt install python3-pip -y
-          sudo git clone https://github.com/ddi4z/Proyecto_Uno.git
-          cd Proyecto_Uno
+          sudo git clone https://github.com/ddi4z/Proyecto_uno.git
+          cd Proyecto_uno
           sudo apt install python3.8-venv
           sudo python3 -m venv venv
           source venv/bin/activate
@@ -433,8 +433,8 @@ resources:
 #           #!/bin/bash
 #           sudo apt-get update
 #           sudo apt install python3-pip -y
-#           sudo git clone https://github.com/ddi4z/Proyecto_Uno.git
-#           cd Proyecto_Uno
+#           sudo git clone https://github.com/ddi4z/Proyecto_uno.git
+#           cd Proyecto_uno
 #           sudo apt install python3.8-venv
 #           sudo python3 -m venv venv
 #           source venv/bin/activate
@@ -473,8 +473,8 @@ resources:
 #           #!/bin/bash
 #           sudo apt-get update
 #           sudo apt install python3-pip -y
-#           sudo git clone https://github.com/ddi4z/Proyecto_Uno.git
-#           cd Proyecto_Uno
+#           sudo git clone https://github.com/ddi4z/Proyecto_uno.git
+#           cd Proyecto_uno
 #           sudo apt install python3.8-venv
 #           sudo python3 -m venv venv
 #           source venv/bin/activate
@@ -515,8 +515,8 @@ resources:
           #!/bin/bash
           sudo apt-get update
           sudo apt install python3-pip -y
-          sudo git clone https://github.com/ddi4z/Proyecto_Uno.git
-          cd Proyecto_Uno
+          sudo git clone https://github.com/ddi4z/Proyecto_uno.git
+          cd Proyecto_uno
           sudo apt install python3.8-venv
           sudo python3 -m venv venv
           source venv/bin/activate
@@ -558,8 +558,8 @@ resources:
 #           #!/bin/bash
 #           sudo apt-get update
 #           sudo apt install python3-pip -y
-#           sudo git clone https://github.com/ddi4z/Proyecto_Uno.git
-#           cd Proyecto_Uno
+#           sudo git clone https://github.com/ddi4z/Proyecto_uno.git
+#           cd Proyecto_uno
 #           sudo apt install python3.8-venv
 #           sudo python3 -m venv venv
 #           source venv/bin/activate
