@@ -115,7 +115,7 @@ def informacionEconomica_create(request):
                     cliente.infoEconomica = informacion_economica
                     cliente.save()
                     messages.success(request, '¡InformacionEconomica creada exitosamente!')
-                return HttpResponseRedirect(settings.PATH_OFERTA + f'?cedula={cliente.cedula}')
+                return HttpResponseRedirect(reverse('oferta') + f'?cedula={cliente.cedula}')
             else:
                 print("¡HMAC inválido! Por favor, verifica la integridad de los datos.")
                 messages.error(request, '¡HMAC inválido! Por favor, verifica la integridad de los datos.')

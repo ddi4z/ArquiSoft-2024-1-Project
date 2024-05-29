@@ -261,7 +261,7 @@ def carga(cedula):
                 create_documentoValidado(1, DocumentoValidado.DescripcionConfiabilidad.CONFIABLE, DocumentoValidado.TipoDocumento.DESPRENDIBLE_PAGO, archivo4, cedulaDecrypted, idSolicitud["idSolicitud"])
             ]
             db.session.commit()
-            return redirect('http://10.128.0.16:8080/confirmar/?cedula=' + cedula)
+            return redirect('/confirmar/?cedula=' + cedula)
 
     return render_template('carga.html', cedula=cedula)
 

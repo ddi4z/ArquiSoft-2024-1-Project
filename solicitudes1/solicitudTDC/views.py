@@ -29,7 +29,7 @@ def validacionLugar(request):
     solicitud.lugarSolicitud = Solicitud.LugarSolicitud.APLICACION
     solicitud.save()
     print(settings.PATH_FIRMA + cedula)
-    return HttpResponseRedirect(settings.PATH_FIRMA + cedula)
+    return HttpResponseRedirect(reverse('firma') + cedula)
 
 def health_check(request):
     return JsonResponse({'message': 'OK'}, status = 200)
