@@ -14,3 +14,5 @@ flask_sqlalchemy
 django-cqrs
 djangorestframework
 pycryptodomex
+pymongo[srv]
+sqlparse
