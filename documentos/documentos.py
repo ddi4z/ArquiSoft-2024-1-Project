@@ -101,17 +101,17 @@ def firma(cedula):
 @app.route('/firma', defaults={'cedula': None}, methods=['GET', 'POST'])
 @app.route('/firma/<cedula>', methods=['GET', 'POST'])
 def firma(cedula):
-    idSolicitud = requests.get('http://127.0.0.3:8080/solicitudPorCedula/', headers={"Accept":"application/json"}, params={'cedula': cedula}).json()
-    solicitud = requests.get('http://127.0.0.1:8000/getSolicitudById/', headers={"Accept":"application/json"}, params={'id': idSolicitud["idSolicitud"]}).json()
+    idSolicitud = requests.get('http://10.128.0.15:8080/solicitudPorCedula/', headers={"Accept":"application/json"}, params={'cedula': cedula}).json()
+    solicitud = requests.get('http://10.128.0.16:8080/getSolicitudById/', headers={"Accept":"application/json"}, params={'id': idSolicitud["idSolicitud"]}).json()
     pagare = db.session.get(Pagare, solicitud["pagare"])
-    requests.put('http://127.0.0.1:8000/updateSolicitud/', headers={"Accept":"application/json"}, params={'idSolicitud': idSolicitud["idSolicitud"], 'etapa': 'FIRMA_DOCUMENTOS'})
+    requests.put('http://10.128.0.16:8080/updateSolicitud/', headers={"Accept":"application/json"}, params={'idSolicitud': idSolicitud["idSolicitud"], 'etapa': 'FIRMA_DOCUMENTOS'})
 
     if pagare == None:
         pagare = Pagare()
         db.session.add(pagare)
         db.session.commit()
-        requests.put('http://127.0.0.1:8000/addPagare/', headers={"Accept":"application/json"}, params={'idSolicitud': solicitud["id"], 'pagare': pagare.id})
-    correo = requests.get('http://127.0.0.3:8080/correoPorCedula/', headers={"Accept":"application/json"}, params={'cedula': cedula}).json()["correo"]
+        requests.put('http://10.128.0.16:8080/addPagare/', headers={"Accept":"application/json"}, params={'idSolicitud': solicitud["id"], 'pagare': pagare.id})
+    correo = requests.get('http://10.128.0.15:8080/correoPorCedula/', headers={"Accept":"application/json"}, params={'cedula': cedula}).json()["correo"]
     if request.method == 'POST':
         try:
             json_data = json.loads(request.data)
@@ -199,8 +199,8 @@ def documentosValidados_list():
 @app.route('/carga/<cedula>', methods=['GET', 'POST'])
 def carga(cedula):
     try:
-        idSolicitud = requests.get('http://127.0.0.3:8080/solicitudPorCedula/', headers={"Accept": "application/json"}, params={'cedula': cedula}).json()
-        requests.put('http://127.0.0.1:8000/updateSolicitud/', headers={"Accept": "application/json"}, params={'idSolicitud': idSolicitud["idSolicitud"], 'etapa': 'CARGUE_DOCUMENTOS'})
+        idSolicitud = requests.get('http://10.128.0.15:8080/solicitudPorCedula/', headers={"Accept": "application/json"}, params={'cedula': cedula}).json()
+        requests.put('http://10.128.0.16:8080/updateSolicitud/', headers={"Accept": "application/json"}, params={'idSolicitud': idSolicitud["idSolicitud"], 'etapa': 'CARGUE_DOCUMENTOS'})
     except requests.RequestException as e:
         return f"Error en la solicitud: {e}", 500
 
@@ -249,7 +249,7 @@ def carga(cedula):
         valido = all([validarArchivo(archivo) for archivo in [archivo1, archivo2, archivo3, archivo4]])
 
         try:
-            cedulaDecrypted = requests.get('http://127.0.0.3:8080/clienteCedulaDecrypted/', headers={"Accept": "application/json"}, params={'cedula': cedula}).json()["cedulaDecrypted"]
+            cedulaDecrypted = requests.get('http://10.128.0.15:8080/clienteCedulaDecrypted/', headers={"Accept": "application/json"}, params={'cedula': cedula}).json()["cedulaDecrypted"]
         except requests.RequestException as e:
             return f"Error en la solicitud de cedula: {e}", 500
 
@@ -261,7 +261,7 @@ def carga(cedula):
                 create_documentoValidado(1, DocumentoValidado.DescripcionConfiabilidad.CONFIABLE, DocumentoValidado.TipoDocumento.DESPRENDIBLE_PAGO, archivo4, cedulaDecrypted, idSolicitud["idSolicitud"])
             ]
             db.session.commit()
-            return redirect('http://127.0.0.1:8000/confirmar/?cedula=' + cedula)
+            return redirect('http://10.128.0.16:8080/confirmar/?cedula=' + cedula)
 
     return render_template('carga.html', cedula=cedula)
 
