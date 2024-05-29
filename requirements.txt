@@ -1,7 +1,6 @@
 Django
 psycopg2-binary
 pytz
-sqlparse
 twilio
 python-dateutil
 cryptography
@@ -15,4 +14,4 @@ django-cqrs
 djangorestframework
 pycryptodomex
 pymongo[srv]
-sqlparse
+sqlparse==0.2.4
