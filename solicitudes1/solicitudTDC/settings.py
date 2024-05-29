@@ -59,7 +59,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'logs.loggingMiddleware.LoggingMiddleware',
 ]
 
 ROOT_URLCONF = 'solicitudTDC.urls'
