@@ -35,7 +35,6 @@ class Log(ReplicaMixin, models.Model):
     
     @classmethod
     def cqrs_create(cls, sync, mapped_data, previous_data=None, meta=None):
-        solicitud = cls._handle_solicitud(mapped_data['solicitud'])
         return Log.objects.create(
             id=mapped_data['id'],
             fecha=mapped_data['fecha'],
@@ -43,19 +42,16 @@ class Log(ReplicaMixin, models.Model):
             codigoHTTP=mapped_data['codigoHTTP'],
             metodoHTTP=mapped_data['metodoHTTP'],
             direccionIP=mapped_data['direccionIP'],
-            solicitud=solicitud,
             cqrs_revision=mapped_data['cqrs_revision'],
             cqrs_updated=mapped_data['cqrs_updated'],
         )
     
     def cqrs_update(self, sync, mapped_data, previous_data=None, meta=None):
-        solicitud = self._handle_solicitud(mapped_data['solicitud'])
         self.fecha = mapped_data['fecha']
         self.nombreEvento = mapped_data['nombreEvento']
         self.codigoHTTP = mapped_data['codigoHTTP']
         self.metodoHTTP = mapped_data['metodoHTTP']
         self.direccionIP = mapped_data['direccionIP']
-        self.solicitud = solicitud
         self.cqrs_revision = mapped_data['cqrs_revision']
         self.cqrs_updated = mapped_data['cqrs_updated']
         self.save()
