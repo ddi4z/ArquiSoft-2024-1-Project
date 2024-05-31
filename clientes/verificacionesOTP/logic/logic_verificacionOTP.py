@@ -2,9 +2,9 @@ from clientes.models import Cliente
 import os
 from twilio.rest import Client
 
-account_sid = "ACf515c94e89930779183230421a78bc9a"
-auth_token = "6a598175faa80f299cb581c66506e6f8"
-verify_sid = "VA06b3ecb8722677ae452a10f59c068b68"
+account_sid = ""
+auth_token = ""
+verify_sid = ""
 client = Client(account_sid, auth_token)
 
 def send_otp(cedula,):
