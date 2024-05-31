@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center;" class="login-box auth0-box before">
+    <div class="page-header-title">
+        <h4 class="page-title">Activación de la tarjeta</h4>
+    </div>
+    <div>
+        <p><strong>Número:</strong> {{ tarjeta.numero_decrypted }}</p>
+        <p><strong>Franquicia:</strong> {{ tarjeta.tipoTarjeta.tarjetaDisponible.franquicia }}</p>
+        <p><strong>Perfil:</strong> {{ tarjeta.tipoTarjeta.tarjetaDisponible.perfil }}</p>
+        <p><strong>Cupo:</strong> {{ tarjeta.tipoTarjeta.cupo }}</p>
+        <p><strong>Descripción:</strong> {{ tarjeta.tipoTarjeta.tarjetaDisponible.descripcion }}</p>
+        <p><strong>Tiempo de vigencia (meses):</strong> {{ tarjeta.tipoTarjeta.tarjetaDisponible.tiempoVigenciaMeses }}</p>
+    </div>
+    <button type="submit" class="btn btn-success waves-effect waves-light" onClick=" window.location.href='/' ">Volver al inicio</button>
+</div>
+
+{% endblock %}
+

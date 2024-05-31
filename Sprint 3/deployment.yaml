@@ -1,0 +1,417 @@
+# ***************** Universidad de los Andes ***********************
+# ****** Departamento de Ingeniería de Sistemas y Computación ******
+# ********** Arquitectura y diseño de Software - ISIS2503 **********
+#
+# Infraestructura para proyecto Solicitud de TDC
+# Elementos a desplegar:
+# 1. Firewalls:
+#    1.1. cbs-services-apps
+#    1.2. cbs-services-apps-web
+#    1.3. cbs-circuit-breaker
+#    1.4. cbs-circuit-breaker-admin
+#    1.5. cbs-clientes-db
+#    1.6. cbs-solicitudes-db
+# 2. Instancias MVs:
+# 2.1. Kong y DBs
+#    2.1.1. cbs-kong-instance (Kong instalado y ejecutando) / us-central1-a
+#    2.1.2. cbs-db-clientes-instance (MongoDB instalado y configurado) / us-central1-a
+#    2.1.3. cbs-db-solicitudes-instance (postgreSQL instalado y configurado) / us-central1-b
+#    2.1.4. cbs-db-documentos-instance (postgreSQL instalado y configurado) / us-central1-c
+# 2.2. VMs con app
+#    2.2.1. cbs-clientes-1 (App instalada y ejecutando) / us-central1-a
+#    2.2.2. cbs-solicitudes-1 (App instalada y ejecutando) / us-central1-b
+#    2.2.3. cbs-documentos-1 (App instalada y ejecutando) / us-central1-c
+# 2.3. VMs replicadas con app
+#    2.2.1. cbs-clientes-2 (App instalada y ejecutando) / southamerica-east1-a
+#    2.2.2. cbs-solicitudes-2 (App instalada y ejecutando) / southamerica-east1-b
+#    2.2.3. cbs-documentos-2 (App instalada y ejecutando) / southamerica-east1-c
+# NOTA 1: us-central1 tiene IPs de la forma 10.128.0.X
+# NOTA 2: southamerica-east1 tiene IPs de la forma 10.158.0.X
+
+resources:
+# 1. Firewalls:
+# 1.1. cbs-services-apps
+- name: cbs-services-apps
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceTags: 
+    - cbs-circuit-breaker
+    targetTags:
+    - cbs-services-firewall
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 8080
+
+# 1.2. cbs-services-apps-web
+- name: cbs-services-apps-web
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceRanges: 
+    - 0.0.0.0/0
+    targetTags:
+    - cbs-services-firewall
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 8080
+
+# 1.3. cbs-circuit-breaker
+- name: cbs-circuit-breaker
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceRanges: 
+    - 0.0.0.0/0
+    targetTags:
+    - cbs-circuit-breaker
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 8000
+
+# 1.4. cbs-circuit-breaker-admin
+- name: cbs-circuit-breaker-admin
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceRanges: 
+    - 0.0.0.0/0
+    targetTags:
+    - cbs-circuit-breaker
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 8001
+
+# 1.5. cbs-clientes-db
+- name: cbs-clientes-db
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceTags: 
+    - cbs-services-firewall
+    targetTags:
+    - cbs-clientes-db
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 27017
+
+# 1.6. cbs-solicitudes-db
+- name: cbs-solicitudes-db
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceTags: 
+    - cbs-services-firewall
+    targetTags:
+    - cbs-solicitudes-db
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 5432
+
+
+# 2. Instancias MVs:
+# 2.1. Kong y DB
+# 2.1.1. cbs-kong-instance
+# - type: compute.v1.instance
+#   name: cbs-kong-instance
+#   properties:
+#     zone: us-central1-a
+#     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-a/machineTypes/e2-micro
+#     disks:
+#     - deviceName: boot
+#       type: PERSISTENT
+#       boot: true
+#       autoDelete: true
+#       initializeParams:
+#         sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240426
+#     networkInterfaces:
+#     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+#       networkIP: 10.128.0.10
+#       accessConfigs:
+#       - name: External NAT
+#         type: ONE_TO_ONE_NAT
+#     tags:
+#       items: 
+#       - cbs-circuit-breaker
+#     metadata:
+#       items:
+#       - key: startup-script
+#         value: |
+#           #!/bin/bash
+#           sudo apt-get update
+#           sudo git clone https://github.com/ddi4z/Proyecto_uno.git
+#           cd Proyecto_Uno
+#           sudo git pull
+#           sudo apt-get install ca-certificates curl gnupg lsb-release -y
+#           sudo mkdir -m 0755 -p /etc/apt/keyrings
+#           curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+#           echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+#           sudo apt-get update
+#           sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+#           sudo groupadd docker
+#           sudo usermod -aG docker $USER
+#           sudo usermod -a -G docker $USER
+#           sudo newgrp docker
+#           docker --version
+#           sudo docker network create kong-net
+#           sudo docker run -d --name kong --network=kong-net -v "$(pwd):/kong/declarative/" -e "KONG_DATABASE=off" -e "KONG_DECLARATIVE_CONFIG=/kong/declarative/kong.yml" -e "KONG_PROXY_ACCESS_LOG=/dev/stdout" -e "KONG_ADMIN_ACCESS_LOG=/dev/stdout" -e "KONG_PROXY_ERROR_LOG=/dev/stderr" -e "KONG_ADMIN_ERROR_LOG=/dev/stderr" -e "KONG_ADMIN_LISTEN=0.0.0.0:8001" -e "KONG_ADMIN_GUI_URL=http://localhost:8002" -p 8000:8000 -p 8001:8001 -p 8002:8002 kong/kong-gateway:2.7.2.0-alpine
+#           sudo docker ps
+#           sudo docker restart kong
+
+# 2.1.2. cbs-db-clientes-instance
+- type: compute.v1.instance
+  name: cbs-db-clientes-instance
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-101-17162-386-64
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+      networkIP: 10.128.0.11
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - cbs-clientes-db
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          docker run -e MONGO_INITDB_ROOT_USERNAME=solicitud_tdc_user -e MONGO_INITDB_ROOT_PASSWORD=solicitud_tdc -p 27017:27017 -d mongo
+          docker ps -a
+
+# # 2.1.2. cbs-db-solicitudes-instance
+# - type: compute.v1.instance
+#   name: cbs-db-solicitudes-instance
+#   properties:
+#     zone: us-central1-b
+#     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-b/machineTypes/e2-micro
+#     disks:
+#     - deviceName: boot
+#       type: PERSISTENT
+#       boot: true
+#       autoDelete: true
+#       initializeParams:
+#         sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240426
+#     networkInterfaces:
+#     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+#       networkIP: 10.128.0.12
+#       accessConfigs:
+#       - name: External NAT
+#         type: ONE_TO_ONE_NAT
+#     tags:
+#       items: 
+#       - cbs-solicitudes-db
+#     metadata:
+#       items:
+#       - key: startup-script
+#         value: |
+#           #!/bin/bash
+#           sudo apt-get update
+#           sudo apt-get install -y postgresql postgresql-contrib
+#           sudo -u postgres psql -c "CREATE USER solicitud_tdc_user WITH PASSWORD 'solicitud_tdc';"
+#           sudo -u postgres createdb -O solicitud_tdc_user solicitud_tdc_db
+#           echo "host all all 0.0.0.0/0 trust" | sudo tee -a /etc/postgresql/12/main/pg_hba.conf
+#           echo "listen_addresses='*'" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
+#           echo "max_connections=8000" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
+#           sudo service postgresql restart
+
+# # 2.1.3. cbs-db-documentos-instance
+# - type: compute.v1.instance
+#   name: cbs-db-documentos-instance
+#   properties:
+#     zone: us-central1-c
+#     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-c/machineTypes/e2-micro
+#     disks:
+#     - deviceName: boot
+#       type: PERSISTENT
+#       boot: true
+#       autoDelete: true
+#       initializeParams:
+#         sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240426
+#     networkInterfaces:
+#     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+#       networkIP: 10.128.0.13
+#       accessConfigs:
+#       - name: External NAT
+#         type: ONE_TO_ONE_NAT
+#     tags:
+#       items: 
+#       - cbs-solicitudes-db
+#     metadata:
+#       items:
+#       - key: startup-script
+#         value: |
+#           #!/bin/bash
+#           sudo apt-get update
+#           sudo apt-get install -y postgresql postgresql-contrib
+#           sudo -u postgres psql -c "CREATE USER solicitud_tdc_user WITH PASSWORD 'solicitud_tdc';"
+#           sudo -u postgres createdb -O solicitud_tdc_user solicitud_tdc_db
+#           echo "host all all 0.0.0.0/0 trust" | sudo tee -a /etc/postgresql/12/main/pg_hba.conf
+#           echo "listen_addresses='*'" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
+#           echo "max_connections=8000" | sudo tee -a /etc/postgresql/12/main/postgresql.conf
+#           sudo service postgresql restart
+
+# 2.2. VMs con app
+# 2.2.1. cbs-clientes-1
+- type: compute.v1.instance
+  name: cbs-clientes-1
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240426
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+      networkIP: 10.128.0.14
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - cbs-services-firewall
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo apt install python3-pip -y
+          sudo git clone https://github.com/ddi4z/Proyecto_uno.git
+          cd Proyecto_Uno
+          apt install python3.8-venv
+          sudo python3 -m venv venv
+          source venv/bin/activate
+          sudo pip3 install -r requirements.txt
+          sudo git pull
+          cd clientes
+          sudo python3 manage.py makemigrations
+          sudo python3 manage.py migrate
+          sudo python3 manage.py migrate --run-syncdb
+          sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
+
+# 2.2.1. cbs-solicitudes-1
+# - type: compute.v1.instance
+#   name: cbs-solicitudes-1
+#   properties:
+#     zone: us-central1-b
+#     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-b/machineTypes/e2-micro
+#     disks:
+#     - deviceName: boot
+#       type: PERSISTENT
+#       boot: true
+#       autoDelete: true
+#       initializeParams:
+#         sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240426
+#     networkInterfaces:
+#     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+#       networkIP: 10.128.0.15
+#       accessConfigs:
+#       - name: External NAT
+#         type: ONE_TO_ONE_NAT
+#     tags:
+#       items: 
+#       - cbs-services-firewall
+#     metadata:
+#       items:
+#       - key: startup-script
+#         value: |
+#           #!/bin/bash
+#           sudo apt-get update
+#           sudo apt install python3-pip -y
+#           sudo git clone https://github.com/ddi4z/Proyecto_uno.git
+#           cd Proyecto_Uno
+#           apt install python3.8-venv
+#           sudo python3 -m venv venv
+#           source venv/bin/activate
+#           sudo pip3 install -r requirements.txt
+#           sudo git pull
+#           cd solicitudes
+#           sudo python3 manage.py makemigrations
+#           sudo python3 manage.py migrate
+#           sudo python3 manage.py migrate --run-syncdb
+#           sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
+
+# # 2.2.1. cbs-documentos-1
+# - type: compute.v1.instance
+#   name: cbs-documentos-1
+#   properties:
+#     zone: us-central1-c
+#     machineType: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/zones/us-central1-c/machineTypes/e2-micro
+#     disks:
+#     - deviceName: boot
+#       type: PERSISTENT
+#       boot: true
+#       autoDelete: true
+#       initializeParams:
+#         sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240426
+#     networkInterfaces:
+#     - network: https://www.googleapis.com/compute/v1/projects/isis2503-talleres-420822/global/networks/default
+#       networkIP: 10.128.0.16
+#       accessConfigs:
+#       - name: External NAT
+#         type: ONE_TO_ONE_NAT
+#     tags:
+#       items: 
+#       - cbs-services-firewall
+#     metadata:
+#       items:
+#       - key: startup-script
+#         value: |
+#           #!/bin/bash
+#           sudo apt-get update
+#           sudo apt install python3-pip -y
+#           sudo git clone https://github.com/ddi4z/Proyecto_uno.git
+#           cd Proyecto_Uno
+#           apt install python3.8-venv
+#           sudo python3 -m venv venv
+#           source venv/bin/activate
+#           sudo pip3 install -r requirements.txt
+#           sudo git pull
+#           cd documentosDjango
+#           sudo python3 manage.py makemigrations
+#           sudo python3 manage.py migrate
+#           sudo python3 manage.py migrate --run-syncdb
+#           sudo nohup python3 manage.py runserver 0.0.0.0:8080 &
+
+# 2.3. VMs replicadas con app
+# 2.2.1. cbs-clientes-2
+
+
+# 2.2.2. cbs-solicitudes-2
+
+
+# 2.2.3. cbs-documentos-2
+

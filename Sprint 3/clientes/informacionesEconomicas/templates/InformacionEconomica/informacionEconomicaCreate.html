@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+    <form method="POST" id="my-form">
+        {% csrf_token %}
+        <input type="hidden" name="hmac" id="hmac">
+        <br>
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success waves-effect waves-light">Continue</button>
+    </form>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
+    <script>
+        document.querySelector('form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(document.getElementById('my-form'));
+            const data = {};
+            formData.forEach((value, key) => {
+                if (key !== 'csrfmiddlewaretoken' && key !== 'hmac') {
+                    if (!isNaN(value)) {
+                        data[key] = Number(value);
+                    } else {
+                        data[key] = value;
+                    }
+                }
+            });
+
+            const message = JSON.stringify(data).replace(/:/g, ': ').replace(/,/g, ', ');
+            const secretKey = 'django-insecure-%hli0)=#odc5pd_xqtyaktwh#y_&(7o$566y&b=a&vkr=oz19p';
+            const hmac = CryptoJS.HmacSHA256(message, secretKey);
+            const hmacHex = hmac.toString(CryptoJS.enc.Hex);
+
+            document.querySelector('#hmac').value = hmacHex;
+            event.target.submit();
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<form method="POST" id="cliente-form">
+    {% csrf_token %}
+    <br>
+    <input type="hidden" name="hmac" id="hmac">
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success waves-effect waves-light">Continue</button>
+<!--     <button type="button" class="btn btn-primary waves-effect waves-light" onClick=" window.location.href='/clientes' ">Back -->
+    </button>
+</form>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
+
+<script>
+    document.getElementById('cliente-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(document.getElementById('cliente-form'));
+        var data = {};
+        formData.forEach((value, key) => {
+                if (key !== 'csrfmiddlewaretoken' && key !== 'hmac') {
+                    if (!isNaN(value) && key !== 'celular' && key !== 'cedula') {
+                        data[key] = Number(value);
+                    } else {
+                        data[key] = value;
+                    }
+                }
+        });
+
+
+        const message = JSON.stringify(data).replace(/:/g, ': ').replace(/,/g, ', ');
+        const secretKey = 'django-insecure-%hli0)=#odc5pd_xqtyaktwh#y_&(7o$566y&b=a&vkr=oz19p';
+        const hmac = CryptoJS.HmacSHA256(message, secretKey).toString(CryptoJS.enc.Hex);
+
+
+        // Enviar el formulario
+        document.querySelector('#hmac').value = hmac;
+        event.target.submit();
+    });
+</script>
+
+{% endblock %}

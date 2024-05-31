@@ -1,0 +1,9 @@
+Django
+psycopg2-binary
+pytz
+sqlparse
+twilio
+python-dateutil
+cryptography
+python-decouple
+pymongo==3.7.2

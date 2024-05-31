@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        {% block head %}
+        <title>Solicitud TDC</title>
+        {% endblock %}
+    </head>
+    <body>
+        <br>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+
+            <nav class="navbar navbar-light bg-light">
+                <a class="navbar-brand" href="/home">
+                <img src="/static/media/logo.webp" width="45" height="45" alt="">
+                </a>
+            </nav>
+
+          <nav class="navbar navbar-light bg-light">
+              <a class="navbar-brand" href="/home">
+                    Banco de Los Alpes
+              </a>
+          </nav>
+
+
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/clientes/">Clientes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/documentosValidados/">documentosValidados</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/pagares/">Pagarés</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/solicitudes/">Solicitudes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/informacionesEconomicas/">Informaciones</a>
+                </li>
+                
+            </ul>
+
+          </div>
+        </nav>
+
+
+        <main>
+          <div class="container" style="min-height: 580px;">
+          {% block content %}
+          {% endblock %}
+          </div>
+        </main>
+
+    </body>
+
+    <!-- Footer -->
+        <footer style="background-color: #D8D8D8; position: relative; bottom: 0; width: 100%; height: 100px;">
+
+            <div style="padding: 30px">
+                <div style="float: left; width: 400px;" >ISIS-2503 Arquitectura y Diseño de Software</div>
+                <div style="float: right; width: 220px;" >Universidad de los Andes</div>
+                <br>
+                <div style="float: left; width: 400px;" ><i>Los DevOpscitos</i></div>
+            </div>
+            <br>
+
+        </footer>
+    <!-- Footer -->

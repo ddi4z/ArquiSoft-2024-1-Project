@@ -1,0 +1,82 @@
+_format_version: "2.1"
+
+services:
+  - name: clientes_service
+    host: clientes_upstream
+    protocol: http
+    routes:
+      - name: home
+        paths:
+          - /home
+        strip_path: false
+      - name: clientes
+        paths:
+          - /
+        strip_path: false
+
+  - name: solicitudes_service
+    host: solicitudes_upstream
+    protocol: http
+    routes:
+      - name: solicitudes
+        paths:
+          - /
+        strip_path: false
+
+  - name: documentos_service
+    host: documentos_upstream
+    protocol: http
+    routes:
+      - name: documentos
+        paths:
+          - /
+        strip_path: false
+    
+upstreams:
+  - name: clientes_upstream
+    targets:
+      - target: 10.128.0.14:8080
+        weight: 100
+    healthchecks:
+      threshold: 51
+      active:
+        http_path: /health/
+        timeout: 5
+        healthy:
+          successes: 2
+          interval: 5
+        unhealthy:
+          tcp_failures: 3
+          interval: 5
+
+  - name: solicitudes_upstream
+    targets:
+      - target: 10.128.0.15:8080
+        weight: 100
+    healthchecks:
+      threshold: 51
+      active:
+        http_path: /health/
+        timeout: 5
+        healthy:
+          successes: 2
+          interval: 5
+        unhealthy:
+          tcp_failures: 3
+          interval: 5
+
+  - name: documentos_upstream
+    targets:
+      - target: 10.128.0.16:8080
+        weight: 100
+    healthchecks:
+      threshold: 51
+      active:
+        http_path: /health/
+        timeout: 5
+        healthy:
+          successes: 2
+          interval: 5
+        unhealthy:
+          tcp_failures: 3
+          interval: 5

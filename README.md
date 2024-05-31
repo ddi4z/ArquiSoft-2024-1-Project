@@ -22,7 +22,7 @@ La implementación de las arquitecturas se realizó en Python, utilizando los fr
 - sprint_3: Incluye el código desarrollado durante los primeros tres sprints.
 - sprint_4: Contiene la última entrega del proyecto, utilizando una arquitectura de microservicios.
 ## Repositorio de Código
-El desarrollo original de la aplicación se realizó en el repositorio de Azure de la organización, por lo que no se muestra el historial completo de todos los commits en este repositorio.
+El desarrollo original de la aplicación se realizó en el repositorio de Azure de la organización, por lo que no se muestra el historial completo de todos los commits en este repositorio y la ejecución de los archivos.yaml puede no ser del todo correcta.
 
 ## Metodología de Trabajo
 La implementación se llevó a cabo en cuatro sprints:
