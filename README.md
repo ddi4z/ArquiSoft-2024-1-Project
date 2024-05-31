@@ -1,5 +1,5 @@
 # Proyecto Banco de Los Alpes
-
+You can read the English version [here](https://github.com/ddi4z/Proyecto_Uno/blob/main/ENGLISH.MD).
 ## Equipo 4 - Sección 2 - Los DevOpscitos
 
 - Laura Julieth Carretero Serrano - 202214922 - l.carretero
